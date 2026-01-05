@@ -1,6 +1,6 @@
 # OpenSkills
 
-[English](README.md) | [中文](README.zh-CN.md)
+[English](README.en.md) | [中文](README.md)
 
 [![npm version](https://img.shields.io/npm/v/@junxin367%2Fopenskills.svg)](https://www.npmjs.com/package/@junxin367/openskills)
 [![npm downloads](https://img.shields.io/npm/dm/@junxin367%2Fopenskills.svg)](https://www.npmjs.com/package/@junxin367/openskills)
