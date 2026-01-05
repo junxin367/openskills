@@ -210,10 +210,13 @@ const currentLocale = getSystemLocale();
  * Supports simple placeholder replacement with {key} syntax
  */
 export function t(key: string, params?: Record<string, string | number>): string {
-  const translation = translations[currentLocale]?.[key] || translations.en[key] || key;
+  const localeTranslations = translations[currentLocale as keyof typeof translations];
+  const translation = (localeTranslations?.[key as keyof typeof localeTranslations] as string) || 
+                      (translations.en[key as keyof typeof translations.en] as string) || 
+                      key;
   
   if (params) {
-    return translation.replace(/\{(\w+)\}/g, (match, paramKey) => {
+    return translation.replace(/\{(\w+)\}/g, (match: string, paramKey: string) => {
       return params[paramKey]?.toString() || match;
     });
   }

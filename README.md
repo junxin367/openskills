@@ -1,96 +1,100 @@
 # OpenSkills
 
-[![npm version](https://img.shields.io/npm/v/openskills.svg)](https://www.npmjs.com/package/openskills)
-[![npm downloads](https://img.shields.io/npm/dm/openskills.svg)](https://www.npmjs.com/package/openskills)
+[English](README.md) | [中文](README.zh-CN.md)
+
+[![npm version](https://img.shields.io/npm/v/@junxin367%2Fopenskills.svg)](https://www.npmjs.com/package/@junxin367/openskills)
+[![npm downloads](https://img.shields.io/npm/dm/@junxin367%2Fopenskills.svg)](https://www.npmjs.com/package/@junxin367/openskills)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**The closest implementation matching Claude Code's skills system** — same prompt format, same marketplace, same folders, just using CLI instead of tools.
+**最接近 Claude Code 技能系统的实现** — 相同的提示格式、相同的市场、相同的文件夹，只是使用 CLI 而不是工具。
 
 ```bash
-npm i -g openskills
+npm i -g @junxin367/openskills
 openskills install anthropics/skills
 openskills sync
 ```
 
-> **Found this useful?** Follow [@nummanali](https://x.com/nummanali) for more AI tooling!
+> **觉得有用？** 关注 [@nummanali](https://x.com/nummanali) 获取更多 AI 工具！
 
 ---
 
-## What Is This?
+## 这是什么？
 
-OpenSkills brings **Anthropic's skills system** to all AI coding agents (Claude Code, Cursor, Windsurf, Aider).
+OpenSkills 将 **Anthropic 的技能系统** 带到所有 AI 编程助手（Claude Code、Cursor、Windsurf、Aider）。
 
-**For Claude Code users:**
-- Install skills from any GitHub repo, not just the marketplace
-- Install from local paths or private git repos
-- Share skills across multiple agents
-- Version control your skills in your repo
-- Symlink skills for local development
+**对于 Claude Code 用户：**
 
-**For other agents (Cursor, Windsurf, Aider):**
-- Get Claude Code's skills system universally
-- Access Anthropic's marketplace skills via GitHub
-- Use progressive disclosure (load skills on demand)
+- 从任何 GitHub 仓库安装技能，不仅仅是市场
+- 从本地路径或私有 git 仓库安装
+- 在多个助手之间共享技能
+- 在仓库中版本控制您的技能
+- 使用符号链接进行本地开发
 
----
+**对于其他助手（Cursor、Windsurf、Aider）：**
 
-## How It Matches Claude Code Exactly
-
-OpenSkills replicates Claude Code's skills system with **100% compatibility**:
-
-- ✅ **Same prompt format** — `<available_skills>` XML with skill tags
-- ✅ **Same marketplace** — Install from [anthropics/skills](https://github.com/anthropics/skills)
-- ✅ **Same folders** — Uses `.claude/skills/` by default
-- ✅ **Same SKILL.md format** — YAML frontmatter + markdown instructions
-- ✅ **Same progressive disclosure** — Load skills on demand, not upfront
-
-**Only difference:** Claude Code uses `Skill` tool, OpenSkills uses `openskills read <name>` CLI command.
-
-**Advanced:** Use `--universal` flag to install to `.agent/skills/` for Claude Code + other agents sharing one AGENTS.md.
+- 通用地获得 Claude Code 的技能系统
+- 通过 GitHub 访问 Anthropic 的市场技能
+- 使用渐进式披露（按需加载技能）
 
 ---
 
-## Quick Start
+## 如何完全匹配 Claude Code
 
-### 1. Install
+OpenSkills 以 **100% 兼容性** 复制 Claude Code 的技能系统：
+
+- ✅ **相同的提示格式** — 带有技能标签的 `<available_skills>` XML
+- ✅ **相同的市场** — 从 [anthropics/skills](https://github.com/anthropics/skills) 安装
+- ✅ **相同的文件夹** — 默认使用 `.claude/skills/`
+- ✅ **相同的 SKILL.md 格式** — YAML 前置元数据 + markdown 指令
+- ✅ **相同的渐进式披露** — 按需加载技能，而不是预先加载
+
+**唯一区别：** Claude Code 使用 `Skill` 工具，OpenSkills 使用 `openskills read <name>` CLI 命令。
+
+**高级：** 使用 `--universal` 标志安装到 `.agent/skills/`，适用于 Claude Code + 其他共享一个 AGENTS.md 的助手。
+
+---
+
+## 快速开始
+
+### 1. 安装
 
 ```bash
-npm i -g openskills
+npm i -g @junxin367/openskills
 ```
 
-### 2. Install Skills
+### 2. 安装技能
 
 ```bash
-# Install from Anthropic's marketplace (interactive selection, default: project install)
+# 从 Anthropic 市场安装（交互式选择，默认：项目安装）
 openskills install anthropics/skills
 
-# Global install (shared across projects, installs to ~/.claude/skills)
+# 全局安装（跨项目共享，安装到 ~/.claude/skills）
 openskills install anthropics/skills --global
 
-# Or install from any GitHub repo
+# 或从任何 GitHub 仓库安装
 openskills install your-org/custom-skills
 
-# Global install custom skills
+# 全局安装自定义技能
 openskills install your-org/custom-skills --global
 ```
 
-### 3. Sync to AGENTS.md
+### 3. 同步到 AGENTS.md
 
-_NOTE: You must have a pre-existing AGENTS.md file for sync to update._
+_注意：您必须有一个预先存在的 AGENTS.md 文件才能进行同步更新。_
 
 ```bash
 openskills sync
 ```
 
-Done! Your agent now has skills with the same `<available_skills>` format as Claude Code.
+完成！您的助手现在拥有与 Claude Code 相同的 `<available_skills>` 格式的技能。
 
 ---
 
-## How It Works (Technical Deep Dive)
+## 工作原理（技术深入）
 
-### Claude Code's Skills System
+### Claude Code 的技能系统
 
-When you use Claude Code with skills installed, Claude's system prompt includes:
+当您使用安装了技能的 Claude Code 时，Claude 的系统提示包括：
 
 ```xml
 <skills_instructions>
@@ -121,16 +125,17 @@ Important:
 </available_skills>
 ```
 
-**How Claude uses it:**
-1. User asks: "Extract data from this PDF"
-2. Claude scans `<available_skills>` → finds "pdf" skill
-3. Claude invokes: `Skill("pdf")`
-4. SKILL.md content loads with detailed instructions
-5. Claude follows instructions to complete task
+**Claude 如何使用它：**
 
-### OpenSkills' System (Identical Format)
+1. 用户询问："从这个 PDF 中提取数据"
+2. Claude 扫描 `<available_skills>` → 找到 "pdf" 技能
+3. Claude 调用：`Skill("pdf")`
+4. SKILL.md 内容加载并提供详细指令
+5. Claude 按照指令完成任务
 
-OpenSkills generates the **exact same** `<available_skills>` XML in your AGENTS.md:
+### OpenSkills 的系统（相同格式）
+
+OpenSkills 在您的 AGENTS.md 中生成 **完全相同的** `<available_skills>` XML：
 
 ```xml
 <skills_system priority="1">
@@ -171,31 +176,32 @@ Usage notes:
 </skills_system>
 ```
 
-**How agents use it:**
-1. User asks: "Extract data from this PDF"
-2. Agent scans `<available_skills>` → finds "pdf" skill
-3. Agent invokes: `Bash("openskills read pdf")`
-4. SKILL.md content is output to agent's context
-5. Agent follows instructions to complete task
+**助手如何使用它：**
 
-### Side-by-Side Comparison
+1. 用户询问："从这个 PDF 中提取数据"
+2. 助手扫描 `<available_skills>` → 找到 "pdf" 技能
+3. 助手调用：`Bash("openskills read pdf")`
+4. SKILL.md 内容输出到助手的上下文
+5. 助手按照指令完成任务
 
-| Aspect | Claude Code | OpenSkills |
-|--------|-------------|------------|
-| **System Prompt** | Built into Claude Code | In AGENTS.md |
-| **Invocation** | `Skill("pdf")` tool | `openskills read pdf` CLI |
-| **Prompt Format** | `<available_skills>` XML | `<available_skills>` XML (identical) |
-| **Folder Structure** | `.claude/skills/` | `.claude/skills/` (identical) |
-| **SKILL.md Format** | YAML + markdown | YAML + markdown (identical) |
-| **Progressive Disclosure** | Yes | Yes |
-| **Bundled Resources** | `references/`, `scripts/`, `assets/` | `references/`, `scripts/`, `assets/` (identical) |
-| **Marketplace** | Anthropic marketplace | GitHub (anthropics/skills) |
+### 并排比较
 
-**Everything is identical except the invocation method.**
+| 方面              | Claude Code                          | OpenSkills                                   |
+| ----------------- | ------------------------------------ | -------------------------------------------- |
+| **系统提示**      | 内置到 Claude Code                   | 在 AGENTS.md 中                              |
+| **调用方式**      | `Skill("pdf")` 工具                  | `openskills read pdf` CLI                    |
+| **提示格式**      | `<available_skills>` XML             | `<available_skills>` XML（相同）             |
+| **文件夹结构**    | `.claude/skills/`                    | `.claude/skills/`（相同）                    |
+| **SKILL.md 格式** | YAML + markdown                      | YAML + markdown（相同）                      |
+| **渐进式披露**    | 是                                   | 是                                           |
+| **捆绑资源**      | `references/`、`scripts/`、`assets/` | `references/`、`scripts/`、`assets/`（相同） |
+| **市场**          | Anthropic 市场                       | GitHub (anthropics/skills)                   |
 
-### The SKILL.md Format
+**除了调用方法外，其他都完全相同。**
 
-Both use the exact same format:
+### SKILL.md 格式
+
+两者使用完全相同的格式：
 
 ```markdown
 ---
@@ -215,244 +221,261 @@ When the user asks you to work with PDFs, follow these steps:
 [Detailed instructions that Claude/agent follows]
 ```
 
-**Progressive disclosure:** The full instructions load only when the skill is invoked, keeping your agent's context clean.
+**渐进式披露：** 完整的指令只在技能被调用时加载，保持助手的上下文清洁。
 
 ---
 
-## Why CLI Instead of MCP?
+## 为什么使用 CLI 而不是 MCP？
 
-**MCP (Model Context Protocol)** is Anthropic's protocol for connecting AI to external tools and data sources. It's great for:
-- Database connections
-- API integrations
-- Real-time data fetching
-- External service integration
+**MCP（模型上下文协议）** 是 Anthropic 用于将 AI 连接到外部工具和数据源的协议。它适用于：
 
-**Skills (SKILL.md format)** are different — they're for:
-- Specialized workflows (PDF manipulation, spreadsheet editing)
-- Bundled resources (scripts, templates, references)
-- Progressive disclosure (load instructions only when needed)
-- Static, reusable patterns
+- 数据库连接
+- API 集成
+- 实时数据获取
+- 外部服务集成
 
-**Why not implement skills via MCP?**
+**技能（SKILL.md 格式）** 是不同的 — 它们用于：
 
-1. **Skills are static instructions, not dynamic tools**
-   MCP is for server-client connections. Skills are markdown files with instructions.
+- 专门的工作流（PDF 操作、电子表格编辑）
+- 捆绑资源（脚本、模板、参考资料）
+- 渐进式披露（仅在需要时加载指令）
+- 静态、可重用的模式
 
-2. **No server needed**
-   Skills are just files. MCP requires running servers.
+**为什么不通过 MCP 实现技能？**
 
-3. **Universal compatibility**
-   CLI works with any agent (Claude Code, Cursor, Windsurf, Aider). MCP requires MCP support.
+1. **技能是静态指令，不是动态工具**
+   MCP 用于服务器-客户端连接。技能是带有指令的 markdown 文件。
 
-4. **Follows Anthropic's design**
-   Anthropic created skills as SKILL.md files, not MCP servers. We're implementing their spec.
+2. **不需要服务器**
+   技能只是文件。MCP 需要运行服务器。
 
-5. **Simpler for users**
-   `openskills install anthropics/skills` vs "configure MCP server, set up authentication, manage server lifecycle"
+3. **通用兼容性**
+   CLI 适用于任何助手（Claude Code、Cursor、Windsurf、Aider）。MCP 需要 MCP 支持。
 
-**MCP and skills solve different problems.** OpenSkills implements Anthropic's skills spec (SKILL.md format) the way it was designed — as progressively-loaded markdown instructions.
+4. **遵循 Anthropic 的设计**
+   Anthropic 将技能创建为 SKILL.md 文件，而不是 MCP 服务器。我们正在实现他们的规范。
+
+5. **对用户更简单**
+   `openskills install anthropics/skills` vs "配置 MCP 服务器、设置身份验证、管理服务器生命周期"
+
+**MCP 和技能解决不同的问题。** OpenSkills 按照设计的方式实现 Anthropic 的技能规范（SKILL.md 格式）— 作为渐进式加载的 markdown 指令。
 
 ---
 
-## Claude Code Compatibility
+## Claude Code 兼容性
 
-You can use **both** Claude Code plugins and OpenSkills project skills together:
+您可以 **同时** 使用 Claude Code 插件和 OpenSkills 项目技能：
 
-**In your `<available_skills>` list:**
+**在您的 `<available_skills>` 列表中：**
+
 ```xml
 <skill>
 <name>pdf</name>
 <description>...</description>
-<location>plugin</location>  <!-- Claude Code marketplace -->
+<location>plugin</location>  <!-- Claude Code 市场 -->
 </skill>
 
 <skill>
 <name>custom-skill</name>
 <description>...</description>
-<location>project</location>  <!-- OpenSkills from GitHub -->
+<location>project</location>  <!-- 来自 GitHub 的 OpenSkills -->
 </skill>
 ```
 
-They coexist perfectly. Claude invokes marketplace plugins via `Skill` tool, OpenSkills skills via CLI. No conflicts.
+它们完美共存。Claude 通过 `Skill` 工具调用市场插件，通过 CLI 调用 OpenSkills 技能。没有冲突。
 
-### Advanced: Universal Mode for Multi-Agent Setups
+### 高级：多助手设置的通用模式
 
-**Problem:** If you use Claude Code + other agents (Cursor, Windsurf, Aider) with one AGENTS.md, installing to `.claude/skills/` can create duplicates with Claude Code's marketplace plugins.
+**问题：** 如果您使用 Claude Code + 其他助手（Cursor、Windsurf、Aider）并共享一个 AGENTS.md，安装到 `.claude/skills/` 可能会与 Claude Code 的市场插件创建重复。
 
-**Solution:** Use `--universal` to install to `.agent/skills/` instead:
+**解决方案：** 使用 `--universal` 安装到 `.agent/skills/` 代替：
 
 ```bash
 openskills install anthropics/skills --universal
 ```
 
-This installs skills to `.agent/skills/` which:
-- ✅ Works with all agents via AGENTS.md
-- ✅ Doesn't conflict with Claude Code's native marketplace plugins
-- ✅ Keeps Claude Code's `<available_skills>` separate from AGENTS.md skills
+这将技能安装到 `.agent/skills/`，它：
 
-**When to use:**
-- ✅ You use Claude Code + Cursor/Windsurf/Aider with one AGENTS.md
-- ✅ You want to avoid duplicate skill definitions
-- ✅ You prefer `.agent/` for infrastructure (keeps `.claude/` for Claude Code only)
+- ✅ 通过 AGENTS.md 适用于所有助手
+- ✅ 不与 Claude Code 的原生市场插件冲突
+- ✅ 将 Claude Code 的 `<available_skills>` 与 AGENTS.md 技能分开
 
-**When not to use:**
-- ❌ You only use Claude Code (default `.claude/skills/` is fine)
-- ❌ You only use non-Claude agents (default `.claude/skills/` is fine)
+**何时使用：**
 
-**Priority order:**
-OpenSkills searches 4 locations in priority order:
-1. `./.agent/skills/` (project universal)
-2. `~/.agent/skills/` (global universal)
-3. `./.claude/skills/` (project)
-4. `~/.claude/skills/` (global)
+- ✅ 您使用 Claude Code + Cursor/Windsurf/Aider 并共享一个 AGENTS.md
+- ✅ 您想避免重复的技能定义
+- ✅ 您更喜欢 `.agent/` 用于基础设施（保持 `.claude/` 仅用于 Claude Code）
 
-Skills with same name only appear once (highest priority wins).
+**何时不使用：**
+
+- ❌ 您只使用 Claude Code（默认 `.claude/skills/` 即可）
+- ❌ 您只使用非 Claude 助手（默认 `.claude/skills/` 即可）
+
+**优先级顺序：**
+OpenSkills 按优先级顺序搜索 4 个位置：
+
+1. `./.agent/skills/`（项目通用）
+2. `~/.agent/skills/`（全局通用）
+3. `./.claude/skills/`（项目）
+4. `~/.claude/skills/`（全局）
+
+同名技能只出现一次（最高优先级获胜）。
 
 ---
 
-## Commands
+## 命令
 
 ```bash
-openskills install <source> [options]  # Install from GitHub, local path, or private repo
-openskills sync [-y] [-o <path>]       # Update AGENTS.md (or custom output)
-openskills list                        # Show installed skills
-openskills read <name>                 # Load skill (for agents)
-openskills manage                      # Remove skills (interactive)
-openskills remove <name>               # Remove specific skill
+openskills install <source> [options]  # 从 GitHub、本地路径或私有仓库安装
+openskills sync [-y] [-o <path>]       # 更新 AGENTS.md（或自定义输出）
+openskills list                        # 显示已安装的技能
+openskills read <name>                 # 加载技能（供助手使用）
+openskills manage                      # 管理技能（交互式删除）
+openskills remove <name>               # 删除特定技能
 ```
 
-### Flags
+### 标志
 
-- `--global` — Install globally to `~/.claude/skills` (default: project install)
-- `--universal` — Install to `.agent/skills/` instead of `.claude/skills/` (advanced)
-- `-y, --yes` — Skip all prompts including overwrites (for scripts/CI)
-- `-o, --output <path>` — Custom output file for sync (default: `.cursor/rules/AGENTS.md` if `.cursor` directory exists, otherwise `AGENTS.md`)
+- `--global` — 全局安装到 `~/.claude/skills`（默认：项目安装）
+- `--universal` — 安装到 `.agent/skills/` 而不是 `.claude/skills/`（高级）
+- `-y, --yes` — 跳过所有提示，包括覆盖（用于脚本/CI）
+- `-o, --output <path>` — 同步的自定义输出文件（默认：如果存在 `.cursor` 目录则使用 `.cursor/rules/AGENTS.md`，否则使用 `AGENTS.md`）
+- `-v, --version` — 显示版本号
 
-### Installation Modes
+### 安装模式
 
-**Default (recommended) - Project install:**
+**默认（推荐）- 项目安装：**
+
 ```bash
 openskills install anthropics/skills
-# → Installs to ./.claude/skills (project local, gitignored)
-# → Only available in current project
+# → 安装到 ./.claude/skills（项目本地，gitignored）
+# → 仅当前项目可用
 ```
 
-**Global install:**
+**全局安装：**
+
 ```bash
 openskills install anthropics/skills --global
-# → Installs to ~/.claude/skills (user home directory)
-# → Available in all projects
-# → Good for installing common skills, avoiding duplicate installations
+# → 安装到 ~/.claude/skills（用户主目录）
+# → 所有项目都可以使用
+# → 适合安装常用技能，避免在每个项目中重复安装
 ```
 
-**When to use global install:**
-- ✅ You want to use the same skills across multiple projects
-- ✅ You want to install common base skills (like pdf, xlsx, etc.)
-- ✅ You don't want to reinstall skills in every project
+**何时使用全局安装：**
 
-**When to use project install (default):**
-- ✅ Project-specific skills
-- ✅ Skills that need version control
-- ✅ Team collaboration projects where skills should be managed with the project
+- ✅ 您想在多个项目中使用相同的技能
+- ✅ 您想安装常用的基础技能（如 pdf、xlsx 等）
+- ✅ 您不想在每个项目中重复安装技能
 
-**Universal mode (advanced):**
+**何时使用项目安装（默认）：**
+
+- ✅ 项目特定的技能
+- ✅ 需要版本控制的技能
+- ✅ 团队协作项目，技能应该随项目一起管理
+
+**通用模式（高级）：**
+
 ```bash
 openskills install anthropics/skills --universal
-# → Installs to ./.agent/skills (for Claude Code + other agents)
+# → 安装到 ./.agent/skills（适用于 Claude Code + 其他助手）
 ```
 
-### Install from Local Paths
+### 从本地路径安装
 
 ```bash
-# Absolute path
+# 绝对路径
 openskills install /path/to/my-skill
 
-# Relative path
+# 相对路径
 openskills install ./local-skills/my-skill
 
-# Home directory
+# 主目录
 openskills install ~/my-skills/custom-skill
 
-# Install all skills from a directory
+# 从目录安装所有技能
 openskills install ./my-skills-folder
 ```
 
-### Install from Private Git Repos
+### 从私有 Git 仓库安装
 
 ```bash
-# SSH (uses your SSH keys)
+# SSH（使用您的 SSH 密钥）
 openskills install git@github.com:your-org/private-skills.git
 
-# HTTPS (may prompt for credentials)
+# HTTPS（可能提示输入凭据）
 openskills install https://github.com/your-org/private-skills.git
 ```
 
-### Sync Options
+### 同步选项
 
 ```bash
-# Sync to default path (.cursor/rules/AGENTS.md if .cursor directory exists, otherwise AGENTS.md)
+# 同步到默认路径（如果存在 .cursor 目录则使用 .cursor/rules/AGENTS.md，否则使用 AGENTS.md）
 openskills sync
 
-# Sync to custom file (auto-creates if missing)
+# 同步到自定义文件（如果缺失则自动创建）
 openskills sync --output .ruler/AGENTS.md
 openskills sync -o custom-rules.md
 
-# Non-interactive (for CI/CD)
+# 非交互式（用于 CI/CD）
 openskills sync -y
 ```
 
-**Default path behavior:**
-- If `.cursor` directory exists in project root, defaults to `.cursor/rules/AGENTS.md` (for Cursor IDE)
-- Otherwise, defaults to `AGENTS.md` in project root
+**默认路径说明：**
 
-### Interactive by Default
+- 如果项目根目录存在 `.cursor` 目录，默认输出到 `.cursor/rules/AGENTS.md`（适用于 Cursor IDE）
+- 否则，默认输出到根目录的 `AGENTS.md`
 
-All commands use beautiful TUI by default:
+### 默认交互式
 
-**Install:**
+所有命令默认使用美观的 TUI：
+
+**安装：**
+
 ```bash
 openskills install anthropics/skills
-# → Checkbox to select which skills to install
-# → Shows skill name, description, size
-# → All checked by default
+# → 复选框选择要安装的技能
+# → 显示技能名称、描述、大小
+# → 默认全部选中
 ```
 
-**Sync:**
+**同步：**
+
 ```bash
 openskills sync
-# → Checkbox to select which skills to include in AGENTS.md
-# → Pre-selects skills already in AGENTS.md
-# → Empty selection removes skills section
+# → 复选框选择要包含在 AGENTS.md 中的技能
+# → 预选已在 AGENTS.md 中的技能
+# → 空选择会删除技能部分
 ```
 
-**Manage:**
+**管理：**
+
 ```bash
 openskills manage
-# → Checkbox to select which skills to remove
-# → Nothing checked by default (safe)
+# → 复选框选择要删除的技能
+# → 默认不选中任何内容（安全）
 ```
 
 ---
 
-## Example Skills
+## 示例技能
 
-From Anthropic's [skills repository](https://github.com/anthropics/skills):
+来自 Anthropic 的[技能仓库](https://github.com/anthropics/skills)：
 
-- **xlsx** — Spreadsheet creation, editing, formulas, data analysis
-- **docx** — Document creation with tracked changes and comments
-- **pdf** — PDF manipulation (extract, merge, split, forms)
-- **pptx** — Presentation creation and editing
-- **canvas-design** — Create posters and visual designs
-- **mcp-builder** — Build Model Context Protocol servers
-- **skill-creator** — Detailed guide for authoring skills
+- **xlsx** — 电子表格创建、编辑、公式、数据分析
+- **docx** — 带跟踪更改和评论的文档创建
+- **pdf** — PDF 操作（提取、合并、拆分、表单）
+- **pptx** — 演示文稿创建和编辑
+- **canvas-design** — 创建海报和视觉设计
+- **mcp-builder** — 构建模型上下文协议服务器
+- **skill-creator** — 编写技能的详细指南
 
-Browse all: [github.com/anthropics/skills](https://github.com/anthropics/skills)
+浏览全部：[github.com/anthropics/skills](https://github.com/anthropics/skills)
 
 ---
 
-## Creating Your Own Skills
+## 创建您自己的技能
 
-### Minimal Structure
+### 最小结构
 
 ```
 my-skill/
@@ -467,27 +490,29 @@ my-skill/
     When the user asks you to X, do Y...
 ```
 
-### With Bundled Resources
+### 带捆绑资源
 
 ```
 my-skill/
 ├── SKILL.md
 ├── references/
-│   └── api-docs.md      # Supporting documentation
+│   └── api-docs.md      # 支持文档
 ├── scripts/
-│   └── process.py       # Helper scripts
+│   └── process.py       # 辅助脚本
 └── assets/
-    └── template.json    # Templates, configs
+    └── template.json    # 模板、配置
 ```
 
-In your SKILL.md, reference resources:
+在您的 SKILL.md 中，引用资源：
+
 ```markdown
 1. Read the API documentation in references/api-docs.md
 2. Run the process.py script from scripts/
 3. Use the template from assets/template.json
 ```
 
-The agent sees the base directory when loading the skill:
+助手在加载技能时看到基础目录：
+
 ```
 Loading: my-skill
 Base directory: /path/to/.claude/skills/my-skill
@@ -495,144 +520,152 @@ Base directory: /path/to/.claude/skills/my-skill
 [SKILL.md content]
 ```
 
-### Publishing
+### 发布
 
-1. Push to GitHub: `your-username/my-skill`
-2. Users install with: `openskills install your-username/my-skill`
+1. 推送到 GitHub：`your-username/my-skill`
+2. 用户使用以下命令安装：`openskills install your-username/my-skill`
 
-### Local Development with Symlinks
+### 使用符号链接进行本地开发
 
-For active skill development, symlink your skill into the skills directory:
+对于活跃的技能开发，将您的技能符号链接到技能目录：
 
 ```bash
-# Clone a skills repo you're developing
+# 克隆您正在开发的技能仓库
 git clone git@github.com:your-org/my-skills.git ~/dev/my-skills
 
-# Symlink into your project's skills directory
+# 符号链接到项目的技能目录
 mkdir -p .claude/skills
 ln -s ~/dev/my-skills/my-skill .claude/skills/my-skill
 
-# Now changes to ~/dev/my-skills/my-skill are immediately reflected
-openskills list  # Shows my-skill
-openskills sync  # Includes my-skill in AGENTS.md
+# 现在对 ~/dev/my-skills/my-skill 的更改会立即反映
+openskills list  # 显示 my-skill
+openskills sync  # 在 AGENTS.md 中包含 my-skill
 ```
 
-This approach lets you:
-- Edit skills in your preferred location
-- Keep skills under version control
-- Test changes instantly without reinstalling
-- Share skills across multiple projects via symlinks
+这种方法让您可以：
 
-### Authoring Guide
+- 在首选位置编辑技能
+- 在版本控制下保持技能
+- 无需重新安装即可立即测试更改
+- 通过符号链接在多个项目之间共享技能
 
-Use Anthropic's skill-creator for detailed guidance:
+### 编写指南
+
+使用 Anthropic 的 skill-creator 获取详细指导：
 
 ```bash
 openskills install anthropics/skills
 openskills read skill-creator
 ```
 
-This loads comprehensive instructions on:
-- Writing effective skill descriptions
-- Structuring instructions for agents
-- Using bundled resources
-- Testing and iteration
+这将加载关于以下内容的全面指令：
+
+- 编写有效的技能描述
+- 为助手构建指令结构
+- 使用捆绑资源
+- 测试和迭代
 
 ---
 
-## Development: Linking Tool Scripts
+## 开发：工具链接脚本
 
-For developers working on OpenSkills, these scripts help install the project as a global tool for testing.
+对于开发 OpenSkills 的开发者，这些脚本可以帮助将项目安装为全局工具以便测试。
 
-### Usage
+### 使用方法
 
-**NPM shortcuts (recommended):**
+**NPM 快捷命令（推荐）：**
+
 ```bash
-# Install tool (link to global)
+# 安装工具（链接到全局）
 npm run link
 
-# Uninstall tool (unlink from global)
+# 卸载工具（取消全局链接）
 npm run unlink
 
-# Check status
+# 查看状态
 npm run link:status
 ```
 
-**Node.js script (cross-platform):**
+**Node.js 脚本（跨平台）：**
+
 ```bash
-# Install tool
+# 安装工具
 node scripts/link-tool.js install
 
-# Uninstall tool
+# 卸载工具
 node scripts/link-tool.js uninstall
 
-# Check status
+# 查看状态
 node scripts/link-tool.js status
 
-# Show help
+# 显示帮助
 node scripts/link-tool.js help
 ```
 
-**PowerShell script (Windows):**
+**PowerShell 脚本（Windows）：**
+
 ```powershell
-# Install tool
+# 安装工具
 .\scripts\link-tool.ps1 install
 
-# Uninstall tool
+# 卸载工具
 .\scripts\link-tool.ps1 uninstall
 
-# Check status
+# 查看状态
 .\scripts\link-tool.ps1 status
 
-# Show help
+# 显示帮助
 .\scripts\link-tool.ps1 help
 ```
 
-### Features
+### 功能说明
 
-**Install (link):**
-- Automatically checks if project is built, builds if needed
-- Checks if already installed to avoid duplicate installation
-- Creates global symlink, making `openskills` command available anywhere
+**安装（link）：**
 
-**Uninstall (unlink):**
-- Checks if installed to avoid unnecessary operations
-- Removes global symlink
-- Removes `openskills` command from system
+- 自动检查项目是否已构建，如未构建会自动构建
+- 检查是否已安装，避免重复安装
+- 创建全局符号链接，使 `openskills` 命令在任意位置可用
 
-**Status:**
-- Shows project path and build directory
-- Checks if CLI file is built
-- Checks global link status
-- Shows version information if installed
+**卸载（unlink）：**
 
-### Notes
+- 检查是否已安装，避免不必要的操作
+- 移除全局符号链接
+- 从系统中移除 `openskills` 命令
 
-1. **Before installing**: Ensure project is built (script will check and build automatically)
-2. **After uninstalling**: `openskills` command will no longer be available
-3. **Reinstalling**: If you need to reinstall, uninstall first then install
+**状态（status）：**
 
-### How It Works
+- 显示项目路径和构建目录
+- 检查 CLI 文件是否已构建
+- 检查全局链接状态
+- 如果已安装，显示版本信息
 
-- **Install**: Uses `npm link` to create global symlink
-- **Uninstall**: Uses `npm unlink -g` to remove global symlink
-- **Status check**: Checks link status via `npm list -g`
+### 注意事项
 
----
+1. **安装前**：确保项目已构建（脚本会自动检查并构建）
+2. **卸载后**：`openskills` 命令将不再可用
+3. **重新安装**：如需重新安装，请先卸载再安装
 
-## Requirements
+### 工作原理
 
-- **Node.js** 20.6+ (for ora dependency)
-- **Git** (for cloning repositories)
+- **安装**：使用 `npm link` 创建全局符号链接
+- **卸载**：使用 `npm unlink -g` 移除全局符号链接
+- **状态检查**：通过 `npm list -g` 检查链接状态
 
 ---
 
-## License
+## 要求
+
+- **Node.js** 20.6+（用于 ora 依赖）
+- **Git**（用于克隆仓库）
+
+---
+
+## 许可证
 
 Apache 2.0
 
-## Attribution
+## 归属
 
-Implements [Anthropic's Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) specification.
+实现 [Anthropic 的 Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) 规范。
 
-**Not affiliated with Anthropic.** Claude, Claude Code, and Agent Skills are trademarks of Anthropic, PBC.
+**与 Anthropic 无关。** Claude、Claude Code 和 Agent Skills 是 Anthropic, PBC 的商标。
