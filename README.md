@@ -14,7 +14,52 @@ openskills install anthropics/skills
 openskills sync
 ```
 
-> **觉得有用？** 关注 [@nummanali](https://x.com/nummanali) 获取更多 AI 工具！
+> 本项目 fork 自 [numman-ali/openskills](https://github.com/numman-ali/openskills/)
+
+## Fork 改进
+
+本 fork 版本在保持与原版完全兼容的基础上，针对实际使用场景进行了以下改进：
+
+### 1. Windows 环境路径问题修复
+
+- ✅ **跨平台路径处理**：修复了 Windows 环境下路径分隔符（`/` vs `\`）导致的路径问题
+- ✅ **路径规范化**：自动处理不同操作系统的路径格式，确保在所有平台上正常工作
+- ✅ **路径显示优化**：统一使用 `/` 作为路径显示分隔符，提升可读性
+
+### 2. 国际化（i18n）支持
+
+- ✅ **自动语言检测**：根据系统环境变量和 `Intl` API 自动检测用户语言环境
+- ✅ **中英文切换**：支持中文和英文界面，自动适配系统语言
+- ✅ **完整翻译覆盖**：所有交互提示、错误信息、帮助文本均已本地化
+- ✅ **智能回退机制**：当翻译缺失时自动回退到英文，确保功能可用性
+
+**语言检测优先级：**
+
+1. 系统环境变量（`LANG`, `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`）
+2. Windows 环境变量（`LANG`, `LOCALE`）
+3. `Intl.DateTimeFormat` API（最可靠）
+4. 默认英文
+
+### 3. GitHub 链接安装防呆处理
+
+- ✅ **URL 自动规范化**：自动处理各种 GitHub URL 格式，包括：
+  - 完整 URL：`https://github.com/owner/repo`
+  - 带分支路径：`https://github.com/owner/repo/tree/main`
+  - 带文件路径：`https://github.com/owner/repo/blob/main/path/to/skill`
+  - 简写格式：`owner/repo` 或 `owner/repo/skill-path`
+- ✅ **智能错误提示**：当仓库不存在或无法访问时，提供清晰的错误信息和解决建议
+- ✅ **友好建议**：自动检测 URL 格式问题并提供正确的安装命令建议
+- ✅ **私有仓库支持**：提供私有仓库访问的配置提示
+
+**示例：**
+
+```bash
+# 以下命令都能正确工作
+openskills install https://github.com/anthropics/skills/tree/main
+openskills install https://github.com/anthropics/skills/blob/main/pdf
+openskills install anthropics/skills
+openskills install anthropics/skills/pdf
+```
 
 ---
 

@@ -14,7 +14,52 @@ openskills install anthropics/skills
 openskills sync
 ```
 
-> **Found this useful?** Follow [@nummanali](https://x.com/nummanali) for more AI tooling!
+> This project is forked from [numman-ali/openskills](https://github.com/numman-ali/openskills/)
+
+## Fork Improvements
+
+This fork version maintains full compatibility with the original while introducing the following improvements for real-world usage:
+
+### 1. Windows Path Issues Fixed
+
+- ✅ **Cross-platform path handling**: Fixed path separator issues (`/` vs `\`) on Windows
+- ✅ **Path normalization**: Automatically handles path formats across different operating systems
+- ✅ **Path display optimization**: Unified use of `/` as path separator for better readability
+
+### 2. Internationalization (i18n) Support
+
+- ✅ **Automatic language detection**: Detects user language from system environment variables and `Intl` API
+- ✅ **Chinese/English switching**: Supports both Chinese and English interfaces, automatically adapts to system language
+- ✅ **Complete translation coverage**: All interactive prompts, error messages, and help text are localized
+- ✅ **Smart fallback mechanism**: Automatically falls back to English when translations are missing
+
+**Language detection priority:**
+
+1. System environment variables (`LANG`, `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`)
+2. Windows environment variables (`LANG`, `LOCALE`)
+3. `Intl.DateTimeFormat` API (most reliable)
+4. Default to English
+
+### 3. GitHub Link Installation Error Prevention
+
+- ✅ **Automatic URL normalization**: Handles various GitHub URL formats, including:
+  - Full URLs: `https://github.com/owner/repo`
+  - Branch paths: `https://github.com/owner/repo/tree/main`
+  - File paths: `https://github.com/owner/repo/blob/main/path/to/skill`
+  - Shorthand: `owner/repo` or `owner/repo/skill-path`
+- ✅ **Smart error messages**: Provides clear error messages and solutions when repository doesn't exist or is inaccessible
+- ✅ **Helpful suggestions**: Automatically detects URL format issues and suggests correct installation commands
+- ✅ **Private repository support**: Provides configuration tips for accessing private repositories
+
+**Examples:**
+
+```bash
+# All of these commands work correctly
+openskills install https://github.com/anthropics/skills/tree/main
+openskills install https://github.com/anthropics/skills/blob/main/pdf
+openskills install anthropics/skills
+openskills install anthropics/skills/pdf
+```
 
 ---
 
