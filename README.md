@@ -61,11 +61,17 @@ npm i -g openskills
 ### 2. Install Skills
 
 ```bash
-# Install from Anthropic's marketplace (interactive selection, default: project)
+# Install from Anthropic's marketplace (interactive selection, default: project install)
 openskills install anthropics/skills
+
+# Global install (shared across projects, installs to ~/.claude/skills)
+openskills install anthropics/skills --global
 
 # Or install from any GitHub repo
 openskills install your-org/custom-skills
+
+# Global install custom skills
+openskills install your-org/custom-skills --global
 ```
 
 ### 3. Sync to AGENTS.md
@@ -320,21 +326,34 @@ openskills remove <name>               # Remove specific skill
 - `--global` — Install globally to `~/.claude/skills` (default: project install)
 - `--universal` — Install to `.agent/skills/` instead of `.claude/skills/` (advanced)
 - `-y, --yes` — Skip all prompts including overwrites (for scripts/CI)
-- `-o, --output <path>` — Custom output file for sync (default: `AGENTS.md`)
+- `-o, --output <path>` — Custom output file for sync (default: `.cursor/rules/AGENTS.md` if `.cursor` directory exists, otherwise `AGENTS.md`)
 
 ### Installation Modes
 
-**Default (recommended):**
+**Default (recommended) - Project install:**
 ```bash
 openskills install anthropics/skills
-# → Installs to ./.claude/skills (project, gitignored)
+# → Installs to ./.claude/skills (project local, gitignored)
+# → Only available in current project
 ```
 
 **Global install:**
 ```bash
 openskills install anthropics/skills --global
-# → Installs to ~/.claude/skills (shared across projects)
+# → Installs to ~/.claude/skills (user home directory)
+# → Available in all projects
+# → Good for installing common skills, avoiding duplicate installations
 ```
+
+**When to use global install:**
+- ✅ You want to use the same skills across multiple projects
+- ✅ You want to install common base skills (like pdf, xlsx, etc.)
+- ✅ You don't want to reinstall skills in every project
+
+**When to use project install (default):**
+- ✅ Project-specific skills
+- ✅ Skills that need version control
+- ✅ Team collaboration projects where skills should be managed with the project
 
 **Universal mode (advanced):**
 ```bash
@@ -371,7 +390,7 @@ openskills install https://github.com/your-org/private-skills.git
 ### Sync Options
 
 ```bash
-# Sync to default AGENTS.md
+# Sync to default path (.cursor/rules/AGENTS.md if .cursor directory exists, otherwise AGENTS.md)
 openskills sync
 
 # Sync to custom file (auto-creates if missing)
@@ -381,6 +400,10 @@ openskills sync -o custom-rules.md
 # Non-interactive (for CI/CD)
 openskills sync -y
 ```
+
+**Default path behavior:**
+- If `.cursor` directory exists in project root, defaults to `.cursor/rules/AGENTS.md` (for Cursor IDE)
+- Otherwise, defaults to `AGENTS.md` in project root
 
 ### Interactive by Default
 
@@ -514,6 +537,86 @@ This loads comprehensive instructions on:
 - Structuring instructions for agents
 - Using bundled resources
 - Testing and iteration
+
+---
+
+## Development: Linking Tool Scripts
+
+For developers working on OpenSkills, these scripts help install the project as a global tool for testing.
+
+### Usage
+
+**NPM shortcuts (recommended):**
+```bash
+# Install tool (link to global)
+npm run link
+
+# Uninstall tool (unlink from global)
+npm run unlink
+
+# Check status
+npm run link:status
+```
+
+**Node.js script (cross-platform):**
+```bash
+# Install tool
+node scripts/link-tool.js install
+
+# Uninstall tool
+node scripts/link-tool.js uninstall
+
+# Check status
+node scripts/link-tool.js status
+
+# Show help
+node scripts/link-tool.js help
+```
+
+**PowerShell script (Windows):**
+```powershell
+# Install tool
+.\scripts\link-tool.ps1 install
+
+# Uninstall tool
+.\scripts\link-tool.ps1 uninstall
+
+# Check status
+.\scripts\link-tool.ps1 status
+
+# Show help
+.\scripts\link-tool.ps1 help
+```
+
+### Features
+
+**Install (link):**
+- Automatically checks if project is built, builds if needed
+- Checks if already installed to avoid duplicate installation
+- Creates global symlink, making `openskills` command available anywhere
+
+**Uninstall (unlink):**
+- Checks if installed to avoid unnecessary operations
+- Removes global symlink
+- Removes `openskills` command from system
+
+**Status:**
+- Shows project path and build directory
+- Checks if CLI file is built
+- Checks global link status
+- Shows version information if installed
+
+### Notes
+
+1. **Before installing**: Ensure project is built (script will check and build automatically)
+2. **After uninstalling**: `openskills` command will no longer be available
+3. **Reinstalling**: If you need to reinstall, uninstall first then install
+
+### How It Works
+
+- **Install**: Uses `npm link` to create global symlink
+- **Uninstall**: Uses `npm unlink -g` to remove global symlink
+- **Status check**: Checks link status via `npm list -g`
 
 ---
 

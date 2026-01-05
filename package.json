@@ -1,6 +1,6 @@
 {
   "name": "openskills",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Universal skills loader for AI coding agents - install and load Anthropic SKILL.md format skills in any agent",
   "type": "module",
   "main": "./dist/cli.js",
@@ -18,7 +18,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run typecheck && npm run build && npm test"
+    "prepublishOnly": "npm run typecheck && npm run build && npm test",
+    "link": "node scripts/link-tool.js install",
+    "unlink": "node scripts/link-tool.js uninstall",
+    "link:status": "node scripts/link-tool.js status"
   },
   "keywords": [
     "anthropic",

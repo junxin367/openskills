@@ -69,8 +69,11 @@ export function replaceSkillsSection(content: string, newSection: string): strin
 
   // Check for XML markers
   if (content.includes(startMarker)) {
+    // Use regex to match the entire skills_system block (non-greedy to get first complete block)
     const regex = /<skills_system[^>]*>[\s\S]*?<\/skills_system>/;
-    return content.replace(regex, newSection);
+    if (regex.test(content)) {
+      return content.replace(regex, newSection);
+    }
   }
 
   // Fallback to HTML comments

@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, existsSync, mkdirSync, rmSync, cpSync, statSync } from 'fs';
-import { join, basename, resolve } from 'path';
+import { join, basename, resolve, sep } from 'path';
 import { homedir } from 'os';
 import { execSync } from 'child_process';
 import chalk from 'chalk';
@@ -9,6 +9,7 @@ import { ExitPromptError } from '@inquirer/core';
 import { hasValidFrontmatter, extractYamlField } from '../utils/yaml.js';
 import { ANTHROPIC_MARKETPLACE_SKILLS } from '../utils/marketplace-skills.js';
 import type { InstallOptions } from '../types.js';
+import { t } from '../utils/i18n.js';
 
 /**
  * Check if source is a local path
@@ -36,6 +37,70 @@ function isGitUrl(source: string): boolean {
 }
 
 /**
+ * Normalize GitHub URL by removing branch/tree paths and converting to clone URL
+ * Examples:
+ *   https://github.com/owner/repo/tree/main -> https://github.com/owner/repo
+ *   https://github.com/owner/repo/blob/main/path -> https://github.com/owner/repo
+ *   https://github.com/owner/repo -> https://github.com/owner/repo
+ */
+function normalizeGitHubUrl(url: string): { repoUrl: string; suggestedUrl: string } {
+  // Only process GitHub URLs
+  if (!url.includes('github.com')) {
+    return { repoUrl: url, suggestedUrl: url };
+  }
+
+  try {
+    const urlObj = new URL(url);
+    
+    // Remove /tree/branch, /blob/branch, /commit/hash, etc.
+    const pathParts = urlObj.pathname.split('/').filter(Boolean);
+    
+    // GitHub URL structure: /owner/repo/...
+    if (pathParts.length >= 2) {
+      const owner = pathParts[0];
+      const repo = pathParts[1];
+      
+      // Remove .git suffix if present
+      const repoName = repo.endsWith('.git') ? repo.slice(0, -4) : repo;
+      
+      // Check if there are branch/tree/blob paths
+      const hasBranchPath = pathParts.length > 2 && 
+        (pathParts[2] === 'tree' || pathParts[2] === 'blob' || pathParts[2] === 'commit');
+      
+      const cleanUrl = `https://github.com/${owner}/${repoName}`;
+      
+      if (hasBranchPath) {
+        // Extract subpath if it exists (e.g., /tree/main/skill-path -> skill-path)
+        let subpath = '';
+        if (pathParts.length > 3) {
+          subpath = pathParts.slice(3).join('/');
+        }
+        
+        return {
+          repoUrl: cleanUrl,
+          suggestedUrl: subpath ? `${owner}/${repoName}/${subpath}` : `${owner}/${repoName}`
+        };
+      }
+      
+      // Check if there's a subpath after repo name (e.g., /owner/repo/skill-path)
+      if (pathParts.length > 2 && pathParts[2] !== 'tree' && pathParts[2] !== 'blob' && pathParts[2] !== 'commit') {
+        const subpath = pathParts.slice(2).join('/');
+        return {
+          repoUrl: cleanUrl,
+          suggestedUrl: `${owner}/${repoName}/${subpath}`
+        };
+      }
+      
+      return { repoUrl: cleanUrl, suggestedUrl: `${owner}/${repoName}` };
+    }
+  } catch {
+    // If URL parsing fails, return as-is
+  }
+  
+  return { repoUrl: url, suggestedUrl: url };
+}
+
+/**
  * Expand ~ to home directory
  */
 function expandPath(source: string): string {
@@ -59,8 +124,8 @@ export async function installSkill(source: string, options: InstallOptions): Pro
     ? chalk.blue(`project (${folder})`)
     : chalk.dim(`global (~/${folder})`);
 
-  console.log(`Installing from: ${chalk.cyan(source)}`);
-  console.log(`Location: ${location}\n`);
+  console.log(`${t('install.installing_from')} ${chalk.cyan(source)}`);
+  console.log(`${t('install.location')} ${location}\n`);
 
   // Handle local path installation
   if (isLocalPath(source)) {
@@ -73,10 +138,24 @@ export async function installSkill(source: string, options: InstallOptions): Pro
   // Parse git source
   let repoUrl: string;
   let skillSubpath: string = '';
+  let originalSource = source;
 
   if (isGitUrl(source)) {
     // Full git URL (SSH, HTTPS, git://)
-    repoUrl = source;
+    // Normalize GitHub URLs to remove branch/tree paths
+    const normalized = normalizeGitHubUrl(source);
+    repoUrl = normalized.repoUrl;
+    
+    // If URL was modified, show a helpful message
+    if (normalized.repoUrl !== source && normalized.suggestedUrl) {
+      console.log(chalk.yellow(`\n${t('install.url_normalized')}`));
+      console.log(chalk.dim(`  ${t('install.original_url')}: ${source}`));
+      console.log(chalk.dim(`  ${t('install.using_url')}: ${normalized.repoUrl}`));
+      if (normalized.suggestedUrl !== normalized.repoUrl) {
+        console.log(chalk.dim(`  ${t('install.suggestion')}: ${chalk.cyan(`openskills install ${normalized.suggestedUrl}`)}`));
+      }
+      console.log();
+    }
   } else {
     // GitHub shorthand: owner/repo or owner/repo/skill-path
     const parts = source.split('/');
@@ -86,8 +165,8 @@ export async function installSkill(source: string, options: InstallOptions): Pro
       repoUrl = `https://github.com/${parts[0]}/${parts[1]}`;
       skillSubpath = parts.slice(2).join('/');
     } else {
-      console.error(chalk.red('Error: Invalid source format'));
-      console.error('Expected: owner/repo, owner/repo/skill-name, git URL, or local path');
+      console.error(chalk.red(t('error') + ': ' + t('install.invalid_source_format')));
+      console.error(chalk.dim(t('install.expected_formats')));
       process.exit(1);
     }
   }
@@ -97,19 +176,37 @@ export async function installSkill(source: string, options: InstallOptions): Pro
   mkdirSync(tempDir, { recursive: true });
 
   try {
-    const spinner = ora('Cloning repository...').start();
+    const spinner = ora(t('install.cloning_repo')).start();
     try {
       execSync(`git clone --depth 1 --quiet "${repoUrl}" "${tempDir}/repo"`, {
         stdio: 'pipe',
       });
-      spinner.succeed('Repository cloned');
+      spinner.succeed(t('install.repo_cloned'));
     } catch (error) {
-      spinner.fail('Failed to clone repository');
-      const err = error as { stderr?: Buffer };
+      spinner.fail(t('install.failed_clone'));
+      const err = error as { stderr?: Buffer; message?: string };
+      
+      // Show error details
       if (err.stderr) {
-        console.error(chalk.dim(err.stderr.toString().trim()));
+        const errorMsg = err.stderr.toString().trim();
+        console.error(chalk.dim(errorMsg));
+        
+        // Check for common errors and provide helpful suggestions
+        if (errorMsg.includes('not found') || errorMsg.includes('does not exist')) {
+          console.error(chalk.yellow(`\n${t('install.repo_not_found')}`));
+          console.error(chalk.dim(`  ${t('install.check_url')}: ${chalk.cyan(repoUrl)}`));
+          if (originalSource !== repoUrl) {
+            console.error(chalk.dim(`  ${t('install.original_source')}: ${chalk.cyan(originalSource)}`));
+          }
+          console.error(chalk.dim(`  ${t('install.try_shorthand')}: ${chalk.cyan(`openskills install ${repoUrl.replace('https://github.com/', '')}`)}`));
+        } else if (errorMsg.includes('Permission denied') || errorMsg.includes('authentication')) {
+          console.error(chalk.yellow(`\n${t('install.tip_private_repo')}`));
+        } else {
+          console.error(chalk.yellow(`\n${t('install.tip_private_repo')}`));
+        }
+      } else {
+        console.error(chalk.yellow(`\n${t('install.tip_private_repo')}`));
       }
-      console.error(chalk.yellow('\nTip: For private repos, ensure git SSH keys or credentials are configured'));
       process.exit(1);
     }
 
@@ -142,13 +239,13 @@ function printPostInstallHints(isProject: boolean): void {
  */
 async function installFromLocal(localPath: string, targetDir: string, options: InstallOptions): Promise<void> {
   if (!existsSync(localPath)) {
-    console.error(chalk.red(`Error: Path does not exist: ${localPath}`));
+    console.error(chalk.red(t('error') + `: Path does not exist: ${localPath}`));
     process.exit(1);
   }
 
   const stats = statSync(localPath);
   if (!stats.isDirectory()) {
-    console.error(chalk.red('Error: Path must be a directory'));
+    console.error(chalk.red(t('error') + ': Path must be a directory'));
     process.exit(1);
   }
 
@@ -177,7 +274,7 @@ async function installSingleLocalSkill(
   const content = readFileSync(skillMdPath, 'utf-8');
 
   if (!hasValidFrontmatter(content)) {
-    console.error(chalk.red('Error: Invalid SKILL.md (missing YAML frontmatter)'));
+    console.error(chalk.red(t('error') + ': Invalid SKILL.md (missing YAML frontmatter)'));
     process.exit(1);
   }
 
@@ -194,15 +291,15 @@ async function installSingleLocalSkill(
   // Security: ensure target path stays within target directory
   const resolvedTargetPath = resolve(targetPath);
   const resolvedTargetDir = resolve(targetDir);
-  if (!resolvedTargetPath.startsWith(resolvedTargetDir + '/')) {
-    console.error(chalk.red(`Security error: Installation path outside target directory`));
+  if (!resolvedTargetPath.startsWith(resolvedTargetDir + sep)) {
+    console.error(chalk.red(t('error') + ': Installation path outside target directory'));
     process.exit(1);
   }
 
   cpSync(skillDir, targetPath, { recursive: true, dereference: true });
 
-  console.log(chalk.green(`✅ Installed: ${skillName}`));
-  console.log(`   Location: ${targetPath}`);
+  console.log(chalk.green(`✅ ${t('install.installed')} ${skillName}`));
+  console.log(`   ${t('install.location')}: ${targetPath}`);
 }
 
 /**
@@ -219,14 +316,14 @@ async function installSpecificSkill(
   const skillMdPath = join(skillDir, 'SKILL.md');
 
   if (!existsSync(skillMdPath)) {
-    console.error(chalk.red(`Error: SKILL.md not found at ${skillSubpath}`));
+    console.error(chalk.red(t('error') + `: SKILL.md not found at ${skillSubpath}`));
     process.exit(1);
   }
 
   // Validate
   const content = readFileSync(skillMdPath, 'utf-8');
   if (!hasValidFrontmatter(content)) {
-    console.error(chalk.red('Error: Invalid SKILL.md (missing YAML frontmatter)'));
+    console.error(chalk.red(t('error') + ': Invalid SKILL.md (missing YAML frontmatter)'));
     process.exit(1);
   }
 
@@ -244,8 +341,8 @@ async function installSpecificSkill(
   // Security: ensure target path stays within target directory
   const resolvedTargetPath = resolve(targetPath);
   const resolvedTargetDir = resolve(targetDir);
-  if (!resolvedTargetPath.startsWith(resolvedTargetDir + '/')) {
-    console.error(chalk.red(`Security error: Installation path outside target directory`));
+  if (!resolvedTargetPath.startsWith(resolvedTargetDir + sep)) {
+    console.error(chalk.red(t('error') + ': Installation path outside target directory'));
     process.exit(1);
   }
   cpSync(skillDir, targetPath, { recursive: true, dereference: true });
@@ -283,11 +380,11 @@ async function installFromRepo(
   const skillDirs = findSkills(repoDir);
 
   if (skillDirs.length === 0) {
-    console.error(chalk.red('Error: No SKILL.md files found in repository'));
+    console.error(chalk.red(t('install.no_skills_found')));
     process.exit(1);
   }
 
-  console.log(chalk.dim(`Found ${skillDirs.length} skill(s)\n`));
+  console.log(chalk.dim(`${t('install.found_skills', { count: skillDirs.length.toString() })}\n`));
 
   // Build skill info list
   const skillInfos = skillDirs
@@ -317,7 +414,7 @@ async function installFromRepo(
     .filter((info) => info !== null);
 
   if (skillInfos.length === 0) {
-    console.error(chalk.red('Error: No valid SKILL.md files found'));
+    console.error(chalk.red(t('install.no_valid_skills')));
     process.exit(1);
   }
 
@@ -334,13 +431,14 @@ async function installFromRepo(
       }));
 
       const selected = await checkbox({
-        message: 'Select skills to install',
+        message: t('install.select_skills'),
         choices,
         pageSize: 15,
+        instructions: t('install.instructions'),
       });
 
       if (selected.length === 0) {
-        console.log(chalk.yellow('No skills selected. Installation cancelled.'));
+        console.log(chalk.yellow(t('install.no_skills_selected')));
         return;
       }
 
@@ -362,7 +460,7 @@ async function installFromRepo(
     // Warn about conflicts
     const shouldInstall = await warnIfConflict(info.skillName, info.targetPath, isProject, options.yes);
     if (!shouldInstall) {
-      console.log(chalk.yellow(`Skipped: ${info.skillName}`));
+      console.log(chalk.yellow(`${t('install.skipped')} ${info.skillName}`));
       continue; // Skip this skill, continue with next
     }
 
@@ -370,17 +468,17 @@ async function installFromRepo(
     // Security: ensure target path stays within target directory
     const resolvedTargetPath = resolve(info.targetPath);
     const resolvedTargetDir = resolve(targetDir);
-    if (!resolvedTargetPath.startsWith(resolvedTargetDir + '/')) {
-      console.error(chalk.red(`Security error: Installation path outside target directory`));
+    if (!resolvedTargetPath.startsWith(resolvedTargetDir + sep)) {
+      console.error(chalk.red(t('error') + ': Installation path outside target directory'));
       continue;
     }
     cpSync(info.skillDir, info.targetPath, { recursive: true, dereference: true });
 
-    console.log(chalk.green(`✅ Installed: ${info.skillName}`));
+    console.log(chalk.green(`✅ ${t('install.installed')} ${info.skillName}`));
     installedCount++;
   }
 
-  console.log(chalk.green(`\n✅ Installation complete: ${installedCount} skill(s) installed`));
+  console.log(chalk.green(`\n✅ ${t('install.installation_complete', { count: installedCount.toString() })}`));
 }
 
 /**
@@ -392,12 +490,12 @@ async function warnIfConflict(skillName: string, targetPath: string, isProject: 
   if (existsSync(targetPath)) {
     if (skipPrompt) {
       // Auto-overwrite in non-interactive mode
-      console.log(chalk.dim(`Overwriting: ${skillName}`));
+      console.log(chalk.dim(`${t('install.overwriting')} ${skillName}`));
       return true;
     }
     try {
       const shouldOverwrite = await confirm({
-        message: chalk.yellow(`Skill '${skillName}' already exists. Overwrite?`),
+        message: chalk.yellow(t('install.skill_exists', { name: skillName })),
         default: false,
       });
 
@@ -406,7 +504,7 @@ async function warnIfConflict(skillName: string, targetPath: string, isProject: 
       }
     } catch (error) {
       if (error instanceof ExitPromptError) {
-        console.log(chalk.yellow('\n\nCancelled by user'));
+        console.log(chalk.yellow(`\n\n${t('cancelled')}`));
         process.exit(0);
       }
       throw error;
@@ -415,10 +513,10 @@ async function warnIfConflict(skillName: string, targetPath: string, isProject: 
 
   // Warn about marketplace conflicts (global install only)
   if (!isProject && ANTHROPIC_MARKETPLACE_SKILLS.includes(skillName)) {
-    console.warn(chalk.yellow(`\n⚠️  Warning: '${skillName}' matches an Anthropic marketplace skill`));
-    console.warn(chalk.dim('   Installing globally may conflict with Claude Code plugins.'));
-    console.warn(chalk.dim('   If you re-enable Claude plugins, this will be overwritten.'));
-    console.warn(chalk.dim('   Recommend: Use --project flag for conflict-free installation.\n'));
+    console.warn(chalk.yellow(`\n⚠️  ${t('install.marketplace_warning', { name: skillName })}`));
+    console.warn(chalk.dim(`   ${t('install.marketplace_conflict')}`));
+    console.warn(chalk.dim(`   ${t('install.marketplace_overwrite')}`));
+    console.warn(chalk.dim(`   ${t('install.recommend_project')}\n`));
   }
 
   return true; // OK to proceed
